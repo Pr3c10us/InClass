@@ -12,6 +12,7 @@
   "dependencies": {
     "@react-pdf/renderer": "^3.1.17",
     "@reduxjs/toolkit": "^1.9.7",
+    "@yudiel/react-qr-scanner": "^1.2.6",
     "autoprefixer": "^10.4.17",
     "axios": "^1.2.1",
     "formik": "^2.4.5",

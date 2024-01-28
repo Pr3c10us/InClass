@@ -12,9 +12,12 @@ const getStudentDetails = async (req, res) => {
 const getLecturerDetails = async (req, res) => {
   const { id } = req.user;
 
-  const student = await Lecturer.findById(id).select("-password");
+  const lecturer = await Lecturer.findById(id).select("-password").populate({
+    path: "courses",
+    // populate: "students attendance",
+  });
 
-  res.json({ student });
+  res.json({ lecturer });
 };
 module.exports = {
   getStudentDetails,

@@ -28,9 +28,7 @@ const LecturerLogin = () => {
 
         toast.success(response.data.msg || "Login successful");
 
-        setTimeout(() => {
-          navigate(`/lecturer/dashboard`);
-        }, 3000);
+        navigate(`/lecturer/dashboard`);
       } catch (error) {
         console.log(error);
 

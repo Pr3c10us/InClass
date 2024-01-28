@@ -14,6 +14,10 @@ import StudentHome from "./student/home/page";
 import Student from "./student/page";
 import StudentCourses from "./student/courses/page";
 import StudentCourseView from "./student/courses/course/page";
+import Lecturer from "./lecturer/page";
+import LecturerHome from "./lecturer/home/page";
+import LecturerCourseView from "./lecturer/course/page";
+import LecturerAttendance from "./lecturer/attendance/page";
 
 const router = createBrowserRouter([
   {
@@ -50,7 +54,7 @@ const router = createBrowserRouter([
   },
   {
     path: "lecturer",
-    // element: <div />,
+    element: <Lecturer />,
     children: [
       {
         path: "signUp",
@@ -59,6 +63,18 @@ const router = createBrowserRouter([
       {
         path: "login",
         element: <LecturerLogin />,
+      },
+      {
+        path: "dashboard",
+        element: <LecturerHome />,
+      },
+      {
+        path: "course/:course",
+        element: <LecturerCourseView />,
+      },
+      {
+        path: "attendance/:attendance",
+        element: <LecturerAttendance />,
       },
     ],
   },

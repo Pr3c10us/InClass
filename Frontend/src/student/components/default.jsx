@@ -51,7 +51,7 @@ const Default = ({ Outlet }) => {
       ) : (
         <AnimatePresence>
           <main className="flex h-screen">
-            {/* <NavBar /> */}
+            <NavBar />
             <MobileNavBar hideMenu={hideMenu} setHideMenu={setHideMenu} />
             <div className="relative flex h-full w-full flex-col overflow-y-scroll px-4">
               <div className="flex justify-between">
@@ -59,7 +59,7 @@ const Default = ({ Outlet }) => {
                   onClick={() => {
                     setHideMenu(!hideMenu);
                   }}
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-2 md:hidden"
                 >
                   <img
                     src="/icons/menu.svg"

@@ -201,10 +201,36 @@ const authorizeStudent = async (req, res) => {
   res.status(200).json({ msg: "Student authorized successfully", token });
 };
 
+const getAttendanceDetails = async (req, res) => {
+  const { id } = req.params;
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    throw new BadRequestError("Invalid attendance id");
+  }
+
+  const { id: lecturerId } = req.user;
+
+  const attendance = await Attendance.findById(id).populate(
+    "students","name matricNumber"
+  );
+
+  if (!attendance) {
+    throw new BadRequestError("Attendance does not exist");
+  }
+
+  if (attendance.lecturer.toString() !== lecturerId) {
+    throw new ForbiddenError(
+      "You are not authorized to add student to this attendance"
+    );
+  }
+
+  res.status(200).json({ attendance });
+};
+
 module.exports = {
   createAttendanceInstance,
   deleteAttendanceInstance,
   deActivateAttendanceInstance,
   addStudentToAttendance,
   authorizeStudent,
+  getAttendanceDetails,
 };

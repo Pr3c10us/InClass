@@ -258,11 +258,11 @@ const getCourseById = async (req, res) => {
   const course = await Course.findById(id)
     .populate({
       path: "students",
-      select: "name matricNumber -_id",
+      select: "name matricNumber ",
     })
     .populate({
       path: "attendance",
-      select: "createdAt students active -_id",
+      select: "createdAt students active ",
       sort: { createdAt: -1 },
     })
     .populate({

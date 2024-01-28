@@ -1,16 +1,19 @@
 import React, { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
-import Loading from "../../../components/loading";
-import axios from "axios";
 import { useSelector } from "react-redux";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import Loading from "../../components/loading";
+import axios from "axios";
+import toast from "react-hot-toast";
 
-const StudentCourseView = () => {
+
+const LecturerCourseView = () => {
   const location = useLocation();
   const courseId = location.pathname.split("/")[3];
   const [course, setCourse] = useState({});
   const [attendance, setAttendance] = useState([]);
   const [loading, setLoading] = useState(true);
-  const student = useSelector((state) => state.redux.student);
+  const lecturer = useSelector((state) => state.redux.lecturer);
+  const navigate = useNavigate();
 
   const handleEffect = async () => {
     try {
@@ -21,18 +24,14 @@ const StudentCourseView = () => {
       );
       setCourse(response.data.course);
       const attendance = response.data.course.attendance;
-      console.log(attendance);
       let newAttendance = attendance.map((att, i) => {
-        const signed = att?.students.find((s) => s === student._id);
         const date = new Date(att.createdAt);
-        if (signed) {
-          return { date: date.toLocaleString(), signed: true };
-        } else {
-          return {
-            date: date.toLocaleString(),
-            signed: false,
-          };
-        }
+
+        return {
+          ...att,
+          date: date.toLocaleString(),
+          signed: att?.students.length,
+        };
       });
       setAttendance(newAttendance);
       setLoading(false);
@@ -40,11 +39,11 @@ const StudentCourseView = () => {
       console.log(error);
       if (error.response) {
         if (error.response.status === 401) {
-          navigate("/student/login");
+          navigate("/lecturer/login");
           return toast.error("Unauthorized");
         }
         toast.error(error.response.data.msg);
-        navigate("/student/home");
+        navigate("/lecturer/home");
         setLoading(false);
       }
       setLoading(false);
@@ -54,6 +53,28 @@ const StudentCourseView = () => {
   useEffect(() => {
     handleEffect();
   }, []);
+
+  const handleStartAttendance = async () => {
+    try {
+      setLoading(true);
+      axios.defaults.withCredentials = true;
+      const response = await axios.post(
+        `${import.meta.env.VITE_BACKEND_URL}attendance`,
+        {
+          courseId: courseId,
+        },
+      );
+      toast.success(response.data.msg || "attendance started successfully");
+      navigate(`/lecturer/attendance/${response.data.attendance._id}`);
+    } catch (error) {
+      console.log(error);
+
+      if (error.response) {
+        const errorMsg = error.response.data.msg;
+        toast.error(errorMsg);
+      }
+    }
+  };
   return (
     <>
       {loading ? (
@@ -68,22 +89,33 @@ const StudentCourseView = () => {
               <h3 className="">Course Code:</h3>
               <p className="text-lg font-medium">{course.courseCode}</p>
             </div>
-            <div className="flex flex-col gap-x-4 md:flex-row">
+            {/* <div className="flex flex-col gap-x-4 md:flex-row">
               <h3 className="">Course Lecturer:</h3>
               <p className="text-lg font-medium">{course.lecturer.name}</p>
-            </div>
+            </div> */}
             <div className="flex flex-col gap-x-4 md:flex-row">
               <h3 className="">Course Description:</h3>
               <p className="text-sm font-medium">{course.description}</p>
             </div>
           </article>
-          <section className="mt-8 grid gap-4 lg:grid-cols-2">
+          <div className="my-4 flex h-max items-center gap-4">
             <h1 className="text-lg font-medium underline lg:col-span-2">
               Your Attendance
             </h1>
+            <button
+              onClick={handleStartAttendance}
+              className="rounded border border-black px-4 py-1 transition-all duration-200 hover:border-primary hover:text-primary"
+            >
+              Start New Attendance
+            </button>
+          </div>
+          <section className="mt-4 grid gap-4 lg:grid-cols-2">
             {attendance.map((att) => {
               return (
-                <div className="flex justify-between rounded border px-4 py-4 text-base ">
+                <Link
+                  to={`/lecturer/attendance/${att._id}`}
+                  className="flex justify-between rounded border px-4 py-4 text-base transition-all duration-200 hover:border-accent "
+                >
                   <h3 className="flex capitalize leading-tight">
                     <span className="mr-1 text-base font-medium capitalize leading-tight ">
                       {att.date}
@@ -93,10 +125,10 @@ const StudentCourseView = () => {
                     <span
                       className={`text-sm  capitalize ${att.signed ? "text-green-500" : "text-red-500"}`}
                     >
-                      {att.signed ? "Signed" : "Not Signed"}
+                      {att.signed}
                     </span>
                   </h3>
-                </div>
+                </Link>
               );
             })}
             {attendance.length === 0 && (
@@ -111,4 +143,4 @@ const StudentCourseView = () => {
   );
 };
 
-export default StudentCourseView;
+export default LecturerCourseView;
