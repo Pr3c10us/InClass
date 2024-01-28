@@ -8,12 +8,14 @@ const {
   addMultipleStudentsToCourse,
   getAllCourses,
   getAllCoursesTeaching,
+  getAllCoursesOffering,
   getCourseById,
 } = require("../controllers/course");
-const { lecturerAuthorize } = require("../middleware/authorizationMiddleware");
+const { lecturerAuthorize, studentAuthorize } = require("../middleware/authorizationMiddleware");
 
 router.route("/").post(lecturerAuthorize, addCourse).get(getAllCourses);
-router.get("/teaching", lecturerAuthorize, getAllCoursesTeaching);
+router.get("/lecturer", lecturerAuthorize, getAllCoursesTeaching);
+router.get("/student", studentAuthorize, getAllCoursesOffering);
 router.route("/:id").delete(lecturerAuthorize, deleteCourse).get(getCourseById);
 router
   .route("/:id/student")

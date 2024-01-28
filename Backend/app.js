@@ -60,6 +60,10 @@ app.use("/api/course", courseRoutes);
 const attendanceRoutes = require("./routes/attendance");
 app.use("/api/attendance", attendanceRoutes);
 
+// PROFILE ROUTES
+const profileRoutes = require("./routes/profile");
+app.use("/api/profile", profileRoutes);
+
 // HOME ROUTE
 app.get(
   "/",

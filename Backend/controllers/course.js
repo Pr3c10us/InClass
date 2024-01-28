@@ -70,20 +70,25 @@ const addStudentToCourse = async (req, res) => {
     throw new BadRequestError("Invalid course id");
   }
 
-  const { studentId } = req.body;
-  if (!studentId) {
+  let { studentMatric } = req.body;
+  if (!studentMatric) {
     throw new BadRequestError("Please provide student id");
   }
-  if (!mongoose.Types.ObjectId.isValid(studentId)) {
-    throw new BadRequestError("Invalid student id");
+  studentMatric = studentMatric.toLowerCase();
+  const matricNumberRegex = /^[a-zA-Z]{3}\/[0-9]{4}\/[0-9]{3}$/;
+  if (!matricNumberRegex.test(studentMatric)) {
+    throw new BadRequestError("Invalid matric number format");
   }
+  // if (!mongoose.Types.ObjectId.isValid(studentMatric)) {
+  //   throw new BadRequestError("Invalid student id");
+  // }
 
   const course = await Course.findById(id);
   if (!course) {
     throw new BadRequestError("Course does not exist");
   }
 
-  const student = await Student.findById(studentId);
+  const student = await Student.findOne({ matricNumber: studentMatric });
   if (!student) {
     throw new BadRequestError("Student does not exist");
   }
@@ -94,7 +99,7 @@ const addStudentToCourse = async (req, res) => {
     throw new BadRequestError("Student already added to course");
   }
 
-  course.students.push(studentId);
+  course.students.push(student._id);
   student.courses.push(id);
 
   await course.save();
@@ -109,20 +114,25 @@ const removeStudentFromCourse = async (req, res) => {
     throw new BadRequestError("Invalid course id");
   }
 
-  const { studentId } = req.body;
-  if (!studentId) {
-    throw new BadRequestError("Please provide student id");
+  let { studentMatric } = req.body;
+  if (!studentMatric) {
+    throw new BadRequestError("Please provide student matric number");
   }
-  if (!mongoose.Types.ObjectId.isValid(studentId)) {
-    throw new BadRequestError("Invalid student id");
+  studentMatric = studentMatric.toLowerCase();
+  const matricNumberRegex = /^[a-zA-Z]{3}\/[0-9]{4}\/[0-9]{3}$/;
+  if (!matricNumberRegex.test(studentMatric)) {
+    throw new BadRequestError("Invalid matric number format");
   }
+  // if (!mongoose.Types.ObjectId.isValid(studentMatric)) {
+  //   throw new BadRequestError("Invalid student id");
+  // }
 
   const course = await Course.findById(id);
   if (!course) {
     throw new BadRequestError("Course does not exist");
   }
 
-  const student = await Student.findById(studentId);
+  const student = await Student.findOne({ matricNumber: studentMatric });
   if (!student) {
     throw new BadRequestError("Student does not exist");
   }
@@ -135,7 +145,7 @@ const removeStudentFromCourse = async (req, res) => {
   }
 
   course.students = course.students.filter(
-    (studentId) => studentId !== studentId
+    (studentMatric) => studentMatric !== studentMatric
   );
   student.courses = student.courses.filter(
     (courseId) => courseId.toString() !== id
@@ -153,16 +163,18 @@ const addMultipleStudentsToCourse = async (req, res) => {
     throw new BadRequestError("Invalid course id");
   }
 
-  const { studentIds } = req.body;
-  if (!studentIds || studentIds.length === 0) {
-    throw new BadRequestError("Please provide student ids");
+  const { studentMatrics } = req.body;
+  if (!studentMatrics || studentMatrics.length === 0) {
+    throw new BadRequestError("Please provide student Matrics");
   }
-  const validIds = studentIds.filter((id) =>
-    mongoose.Types.ObjectId.isValid(id)
-  );
-  const invalidIds = studentIds.filter(
-    (id) => !mongoose.Types.ObjectId.isValid(id)
-  );
+  const validIds = studentMatrics.filter((matric) => {
+    // mongoose.Types.ObjectId.isValid(id)
+    let studentMatric = matric.toLowerCase();
+    const matricNumberRegex = /^[a-zA-Z]{3}\/[0-9]{4}\/[0-9]{3}$/;
+    if (matricNumberRegex.test(studentMatric)) {
+      return true;
+    }
+  });
 
   if (validIds.length < 1) {
     throw new BadRequestError("Invalid student ids");
@@ -174,7 +186,7 @@ const addMultipleStudentsToCourse = async (req, res) => {
     throw new BadRequestError("Course does not exist");
   }
 
-  const students = await Student.find({ _id: { $in: validIds } });
+  const students = await Student.find({ matricNumber: { $in: validIds } });
   if (!students || students.length < 1) {
     throw new BadRequestError("Students do not exist");
   }
@@ -223,6 +235,17 @@ const getAllCoursesTeaching = async (req, res) => {
   res.status(200).json({ courses });
 };
 
+const getAllCoursesOffering = async (req, res) => {
+  const { id } = req.user;
+  // get student courses and populate with lecturer
+  const student = await Student.findById(id).populate({
+    path: "courses",
+    populate: { path: "lecturer", select: "name -_id" },
+    select: "-students -__v -attendance",
+  });
+
+  res.status(200).json({ courses: student.courses });
+};
 // Come back to edit after attendance is done
 const getCourseById = async (req, res) => {
   const { id } = req.params;
@@ -232,7 +255,20 @@ const getCourseById = async (req, res) => {
   // add filter to get only s]certain students based on name of the student
   const { name } = req.query;
 
-  const course = await Course.findById(id).populate("students attendance");
+  const course = await Course.findById(id)
+    .populate({
+      path: "students",
+      select: "name matricNumber -_id",
+    })
+    .populate({
+      path: "attendance",
+      select: "createdAt students active -_id",
+      sort: { createdAt: -1 },
+    })
+    .populate({
+      path: "lecturer",
+      select: "name -_id",
+    });
   if (!course) {
     throw new BadRequestError("Course does not exist");
   }
@@ -255,5 +291,6 @@ module.exports = {
   addMultipleStudentsToCourse,
   getAllCourses,
   getAllCoursesTeaching,
+  getAllCoursesOffering,
   getCourseById,
 };

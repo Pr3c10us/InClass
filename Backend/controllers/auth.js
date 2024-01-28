@@ -4,26 +4,30 @@ const jwt = require("jsonwebtoken"); // For generating JWT
 // Models
 const Student = require("../models/student");
 const Lecturer = require("../models/lecturer");
+const { BadRequestError } = require("../errors");
 
 const studentRegister = async (req, res) => {
   const { name, email, password, matricNumber } = req.body;
 
   if (!name || !email || !password || !matricNumber) {
-    return res.status(400).json({
-      success: false,
-      message: "Please enter all fields",
-    });
+    throw new BadRequestError("Please enter all fields");
   }
 
+  // check if matric number is of format XXX/0000/000 where 000 is a number and XXX is a string
+  const matricNumberRegex = /^[a-zA-Z]{3}\/[0-9]{4}\/[0-9]{3}$/;
+  if (!matricNumberRegex.test(matricNumber)) {
+    throw new BadRequestError("Invalid matric number format");
+  }
   const userExist = await Student.findOne({ email: email });
 
   if (userExist) {
-    return res.status(400).json({
-      success: false,
-      message: "User already exist",
-    });
+    throw new BadRequestError("User with email already exist");
   }
+  const userExist2 = await Student.findOne({ matricNumber: matricNumber });
 
+  if (userExist2) {
+    throw new BadRequestError("User with matric number already exist");
+  }
   const lowerCaseMatricNumber = matricNumber.toLowerCase();
 
   const salt = await bcrypt.genSalt(10);
@@ -46,28 +50,20 @@ const studentLogin = async (req, res) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
-    res.status(400).json({
-      success: false,
-      message: "Please enter all fields",
-    });
+    throw new BadRequestError("Please enter all fields");
   }
 
   const user = await Student.findOne({ email: email });
 
   if (!user) {
-    res.status(400).json({
-      success: false,
-      message: "Invalid credentials - User does not exist",
-    });
+    throw new BadRequestError("Invalid credentials - User does not exist");
   }
+  // console.log({password, userPassword: user.password});
 
   const isMatch = await bcrypt.compare(password, user.password);
 
   if (!isMatch) {
-    res.status(400).json({
-      success: false,
-      message: "Invalid credentials - Password does not match",
-    });
+    throw new BadRequestError("Invalid credentials - Password does not match");
   }
 
   // create jwt
@@ -104,19 +100,13 @@ const lecturersRegister = async (req, res) => {
   const { name, email, password } = req.body;
 
   if (!name || !email || !password) {
-    return res.status(400).json({
-      success: false,
-      message: "Please enter all fields",
-    });
+    throw new BadRequestError("Please enter all fields");
   }
 
   const userExist = await Lecturer.findOne({ email: email });
 
   if (userExist) {
-    return res.status(400).json({
-      success: false,
-      message: "User already exist",
-    });
+    throw new BadRequestError("User with email already exist");
   }
 
   const salt = await bcrypt.genSalt(10);
@@ -138,28 +128,19 @@ const lecturersLogin = async (req, res) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
-    res.status(400).json({
-      success: false,
-      message: "Please enter all fields",
-    });
+    throw new BadRequestError("Please enter all fields");
   }
 
   const user = await Lecturer.findOne({ email: email });
 
   if (!user) {
-    res.status(400).json({
-      success: false,
-      message: "Invalid credentials - User does not exist",
-    });
+    throw new BadRequestError("Invalid credentials - User does not exist");
   }
 
   const isMatch = await bcrypt.compare(password, user.password);
 
   if (!isMatch) {
-    res.status(400).json({
-      success: false,
-      message: "Invalid credentials - Password does not match",
-    });
+    throw new BadRequestError("Invalid credentials - Password does not match");
   }
 
   // create jwt
