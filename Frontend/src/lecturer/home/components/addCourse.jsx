@@ -55,7 +55,7 @@ const AddCourse = ({ setAdd }) => {
       />
       <form
         onSubmit={formik.handleSubmit}
-        className="z-20  w-full max-w-2xl space-y-4 rounded-lg border-2 bg-white p-4"
+        className="z-20  w-full mx-4 max-w-2xl space-y-4 rounded-lg border-2 bg-white p-4"
       >
         <div className="flex items-center justify-between">
           <h1 className="text-xl font-medium">Add Course</h1>

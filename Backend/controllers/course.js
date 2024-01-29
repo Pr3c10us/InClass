@@ -128,6 +128,8 @@ const removeStudentFromCourse = async (req, res) => {
   // }
 
   const course = await Course.findById(id);
+  console.log(course.students);
+
   if (!course) {
     throw new BadRequestError("Course does not exist");
   }
@@ -145,11 +147,13 @@ const removeStudentFromCourse = async (req, res) => {
   }
 
   course.students = course.students.filter(
-    (studentMatric) => studentMatric !== studentMatric
+    (studentId) => studentId.toString() != student._id.toString()
   );
   student.courses = student.courses.filter(
     (courseId) => courseId.toString() !== id
   );
+
+  console.log(course.students);
 
   await course.save();
   await student.save();
@@ -258,7 +262,7 @@ const getCourseById = async (req, res) => {
   const course = await Course.findById(id)
     .populate({
       path: "students",
-      select: "name matricNumber ",
+      select: "name matricNumber email",
     })
     .populate({
       path: "attendance",

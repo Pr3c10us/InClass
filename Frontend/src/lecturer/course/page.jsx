@@ -4,7 +4,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import Loading from "../../components/loading";
 import axios from "axios";
 import toast from "react-hot-toast";
-
+import Students from "./components/students";
 
 const LecturerCourseView = () => {
   const location = useLocation();
@@ -12,6 +12,7 @@ const LecturerCourseView = () => {
   const [course, setCourse] = useState({});
   const [attendance, setAttendance] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [viewStudent, setViewStudent] = useState(false);
   const lecturer = useSelector((state) => state.redux.lecturer);
   const navigate = useNavigate();
 
@@ -85,7 +86,7 @@ const LecturerCourseView = () => {
             <h1 className="text-xl font-medium capitalize md:mb-4 md:text-3xl">
               {course.title}
             </h1>
-            <div className="flex flex-col gap-x-4 md:flex-row">
+            <div className="flex flex-col gap-x-4 md:flex-row md:items-center">
               <h3 className="">Course Code:</h3>
               <p className="text-lg font-medium">{course.courseCode}</p>
             </div>
@@ -93,9 +94,21 @@ const LecturerCourseView = () => {
               <h3 className="">Course Lecturer:</h3>
               <p className="text-lg font-medium">{course.lecturer.name}</p>
             </div> */}
-            <div className="flex flex-col gap-x-4 md:flex-row">
+            <div className="flex flex-col gap-x-4 md:flex-row md:items-center">
               <h3 className="">Course Description:</h3>
               <p className="text-sm font-medium">{course.description}</p>
+            </div>
+            <div className="flex flex-col gap-x-4 md:flex-row md:items-center">
+              <h3 className="">Students:</h3>
+              <div className="flex items-center gap-x-2">
+                <p className="text-base font-bold">{course.students.length}</p>
+                <button
+                  onClick={() => setViewStudent(!viewStudent)}
+                  className="text-xs font-medium text-accent underline"
+                >
+                  View All Student
+                </button>
+              </div>
             </div>
           </article>
           <div className="my-4 flex h-max items-center gap-4">
@@ -103,7 +116,16 @@ const LecturerCourseView = () => {
               Your Attendance
             </h1>
             <button
-              onClick={handleStartAttendance}
+              onClick={() => {
+                const confirm = window.confirm(
+                  "Are you sure you want to start a new attendance?",
+                );
+                if (confirm) {
+                  handleStartAttendance();
+                } else {
+                  return;
+                }
+              }}
               className="rounded border border-black px-4 py-1 transition-all duration-200 hover:border-primary hover:text-primary"
             >
               Start New Attendance
@@ -137,6 +159,16 @@ const LecturerCourseView = () => {
               </h1>
             )}
           </section>
+          {viewStudent && (
+            <Students
+              setViewStudent={setViewStudent}
+              students={course.students}
+              code={course.courseCode}
+              id={course._id}
+              setAttendance={setAttendance}
+              setCourse={setCourse}
+            />
+          )}
         </main>
       )}
     </>
