@@ -70,7 +70,7 @@ app.get(
   // upload.array("photos"),
   (req, res) => {
     console.log({ files: req.files, body: req.body });
-    res.json({ msg: "Welcome To Asis" });
+    res.json({ msg: "Welcome To InClass" });
   }
 );
 
