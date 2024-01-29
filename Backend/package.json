@@ -6,7 +6,8 @@
     "scripts": {
         "start": "pm2 start app.js",
         "dev": "nodemon app.js",
-        "stop": "pm2 stop app.js"
+        "stop": "pm2 stop app.js",
+        "vercel-build": "echo hello"
     },
     "author": "",
     "license": "ISC",

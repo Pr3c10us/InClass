@@ -100,3 +100,5 @@ const serverApp = async () => {
   }
 };
 serverApp();
+
+module.exports = app;
